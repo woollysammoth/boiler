@@ -1,5 +1,5 @@
 import { h, Component } from 'preact';
-import Header from '../../../Components/Header';
+import Header from '../../../app/Components/Header';
 import { Link } from 'preact-router/match';
 import { shallow, deep } from 'preact-render-spy';
 

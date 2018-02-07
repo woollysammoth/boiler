@@ -1,4 +1,4 @@
-# Boiler (Preact)
+# Boilerplates (Preact)
 
 ## CLI Commands
 

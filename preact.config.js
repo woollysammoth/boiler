@@ -1,10 +1,8 @@
-//Webpack custom paths
-var filePrefix = "/root/git/boiler/src";
-var cssIncludes = [	
-	filePrefix + "/app/Components", 
-	filePrefix + "/app/Scenes", 
-	filePrefix + "/public/css"
-];
+import { filter } from 'minimatch';
+import { normalize, resolve } from 'path';
+
+const cleanFilename = name => name.replace(/(^\/(Scenes|Components\/(routes|async))\/|(\/index)?\.js$)/g, '');
+const normalizePath = path => normalize(path).replace(/\\/g, '/');
 
 /**
  * Function that mutates original webpack config.
@@ -15,20 +13,44 @@ var cssIncludes = [
  * @param {WebpackConfigHelpers} helpers - object with useful helpers when working with config.
  **/
 export default function (config, env, helpers) {
-  	let babelLoader = helpers.getLoadersByName(config, 'babel-loader')[0];
-  	let babelConfig = babelLoader.options;
-  
-  	//babelConfig.plugins.push('');
-  	//babelConfig.env = {}
+  	let src = env.src;
+  	let app = dir => resolve(env.src + "/app", dir);
 
-	//Webpack custom paths for CSS
+	let cssIncludes = [	
+		src + "/app/Components", 
+		src + "/app/Scenes", 
+		src + "/public/css"
+	];
+
+	//Configure Webpack for our custom paths (CSS and code splitting)
   	config.module.loaders.forEach(function(load){
+
+  		//Code splitting
+  		if(load.loader && load.loader.indexOf("async-component-loader") !== -1){
+  			load.include = [
+				filter(app('Scenes')+'/{*.js,*/index.js}'),
+				filter(app('Components')+'/{routes,async}/{*.js,*/index.js}')
+  			];
+
+  			load.options = {
+				name(filename) {
+					filename = normalizePath(filename);
+					let relative = filename.replace(normalizePath(src), '');
+					if (!relative.includes('/Scenes/')) return false;
+					return 'route-' + cleanFilename(relative);
+				},
+				formatName(filename) {
+					filename = normalizePath(filename);
+					let relative = filename.replace(normalizePath(source('.')), '');
+					return cleanFilename(relative);
+				}
+			};
+  		}
+
+  		//CSS
   		if(load.test.toString() === /\.(css|less|s[ac]ss|styl)$/.toString()){
   			if(load.include) load.include = cssIncludes
   			if(load.exclude) load.exclude = cssIncludes;
   		}
   	});
-
-
-  	console.dir(config, {depth: null})
 }

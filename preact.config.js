@@ -28,4 +28,7 @@ export default function (config, env, helpers) {
   			if(load.exclude) load.exclude = cssIncludes;
   		}
   	});
+
+
+  	console.dir(config, {depth: null})
 }
